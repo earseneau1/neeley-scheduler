@@ -150,6 +150,7 @@ function createRepeatedEvent(masterEvent, targetDay, pattern) {
 
 function createEvent(parent, topPx, heightPx, day, isRepeat = false, groupId = null, pattern = null) {
   let eventEl = document.createElement("div");
+  eventEl.style.position = 'relative';
   eventEl.className = "event" + (isRepeat ? " repeat-event" : "");
   eventEl.style.top = topPx + "px";
   eventEl.style.height = heightPx + "px";
@@ -162,21 +163,39 @@ function createEvent(parent, topPx, heightPx, day, isRepeat = false, groupId = n
     eventEl.dataset.master = "true";
     eventEl.dataset.repeatGroup = generateUniqueId();
   }
-  eventEl.innerHTML = `
-    ${!isRepeat ? '<div class="resize-handle top"></div>' : ''}
-    <button class="assign-professor">Assign Professor</button>
-    <button class="assign-class">Assign Class</button>
-    <div class="label"></div>
-    ${!isRepeat ? `
+  if (!isRepeat) {
+    eventEl.innerHTML = `
+      <div class="resize-handle top"></div>
+      <div class="event-header" style="position: relative;">
+        <div class="assign-professor-icon" style="position: absolute; top: 0; left: 0;">
+          <button class="assign-professor"><i class="fas fa-chalkboard-teacher" title="Assign Professor"></i></button>
+        </div>
+        <div class="assign-class-icon" style="position: absolute; top: 0; right: 0;">
+          <button class="assign-class"><i class="fas fa-book" title="Assign Class"></i></button>
+        </div>
+      </div>
+      <div class="label"></div>
       <div class="resize-handle bottom"></div>
       <div class="preset-buttons">
         ${day === "Tuesday" ? '' : '<button class="preset-button" data-duration="50">50</button>'}
         <button class="preset-button" data-duration="80">80</button>
         <button class="preset-button" data-duration="160">160</button>
       </div>
-      <button class="delete-button">Delete</button>
-    ` : ''}
-  `;
+      <button class="delete-button"><i class="fas fa-trash-alt" title="Delete Event"></i></button>
+    `;
+  } else {
+    eventEl.innerHTML = `
+      <div class="event-header" style="position: relative;">
+        <div class="assign-professor-icon" style="position: absolute; top: 0; left: 0;">
+          <button class="assign-professor"><i class="fas fa-chalkboard-teacher" title="Assign Professor"></i></button>
+        </div>
+        <div class="assign-class-icon" style="position: absolute; top: 0; right: 0;">
+          <button class="assign-class"><i class="fas fa-book" title="Assign Class"></i></button>
+        </div>
+      </div>
+      <div class="label"></div>
+    `;
+  }
   parent.appendChild(eventEl);
   updateLabel(eventEl);
   if (!isRepeat) attachEventListeners(eventEl);
@@ -311,12 +330,15 @@ document.addEventListener("mousemove", function(e) {
 document.addEventListener("mouseup", function(e) {
   if (!currentEvent || !dragType) return;
   let snappedTop = minutesToPx(snapTime(pxToMinutes(parseFloat(currentEvent.style.top))));
-  let snappedHeight = minutesToPx(snapTime(pxToMinutes(parseFloat(currentEvent.style.height))));
   if (restrictedDays.includes(currentEvent.dataset.day) && snappedTop < minutesToPx(restrictionStart)) {
     snappedTop = minutesToPx(restrictionStart);
   }
   currentEvent.style.top = snappedTop + "px";
-  currentEvent.style.height = snappedHeight + "px";
+  
+  if (dragType !== "move") {
+    let snappedHeight = minutesToPx(snapTime(pxToMinutes(parseFloat(currentEvent.style.height))));
+    currentEvent.style.height = snappedHeight + "px";
+  }
   updateLabel(currentEvent);
   syncRepeatedEvents(currentEvent);
   

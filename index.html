@@ -5,6 +5,7 @@
   <title>Multi-Day Calendar with Mirrored Repeated Events</title>
   <!-- Link to the CSS file -->
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
   <h2>Multi-Day Calendar with Full-Width Layout, Restrictions, Linked Repetition & Event Table</h2>
@@ -44,6 +45,27 @@
       </div>
     </div>
   </div>
+  <!-- Template for event elements -->
+  <template id="event-template">
+    <div class="event" style="position: relative;">
+      <div class="event-header" style="position: relative;">
+        <div class="assign-professor-icon" style="position: absolute; top: 0; left: 0;">
+          <i class="fas fa-chalkboard-teacher" title="Assign Professor"></i>
+        </div>
+        <div class="assign-class-icon" style="position: absolute; top: 0; right: 0;">
+          <i class="fas fa-book" title="Assign Class"></i>
+        </div>
+      </div>
+      <div class="event-body">
+        <!-- Event content goes here -->
+      </div>
+      <div class="event-footer" style="position: relative;">
+        <div class="delete-icon" style="position: absolute; bottom: 0; left: 0;">
+          <i class="fas fa-trash-alt" title="Delete Event"></i>
+        </div>
+      </div>
+    </div>
+  </template>
   <!-- Link to the JavaScript file -->
   <script src="script.js"></script>
 </body>
