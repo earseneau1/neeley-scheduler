@@ -21,7 +21,11 @@ function formatTime(totalMinutes) {
   let minuteStr = minute < 10 ? '0' + minute : minute;
   return displayHour + ':' + minuteStr + ' ' + period;
 }
-function snapTime(totalMinutes) { return Math.round(totalMinutes / 30) * 30; }
+function snapTime(totalMinutes) {
+  // If the totalMinutes equals the default event duration (80 minutes), return it unchanged
+  if (totalMinutes === defaultEventDuration) return totalMinutes;
+  return Math.round(totalMinutes / 30) * 30;
+}
 function approxEqual(a, b, tol = 2) { return Math.abs(a - b) <= tol; }
 
 // Build Calendar Structure
@@ -81,8 +85,7 @@ days.forEach(day => {
   drawDayGrid(col);
   col.addEventListener("click", function(e) {
     if (e.target.closest(".event")) return;
-    let rect = col.getBoundingClientRect();
-    let clickY = e.clientY - rect.top;
+    let clickY = e.pageY - col.offsetTop;
     let clickMinutes = pxToMinutes(clickY);
     if (restrictedDays.includes(day) && clickMinutes < restrictionStart) {
       alert(`Events on ${day} must be 5PM or later.`);
@@ -150,7 +153,6 @@ function createRepeatedEvent(masterEvent, targetDay, pattern) {
 
 function createEvent(parent, topPx, heightPx, day, isRepeat = false, groupId = null, pattern = null) {
   let eventEl = document.createElement("div");
-  eventEl.style.position = 'relative';
   eventEl.className = "event" + (isRepeat ? " repeat-event" : "");
   eventEl.style.top = topPx + "px";
   eventEl.style.height = heightPx + "px";
@@ -197,6 +199,7 @@ function createEvent(parent, topPx, heightPx, day, isRepeat = false, groupId = n
     `;
   }
   parent.appendChild(eventEl);
+  eventEl.dataset.justCreated = "true";
   updateLabel(eventEl);
   if (!isRepeat) attachEventListeners(eventEl);
   return eventEl;
@@ -208,6 +211,10 @@ function attachEventListeners(eventEl) {
   eventEl.addEventListener("mousedown", function(e) {
     if (e.target.classList.contains("assign-professor") || e.target.classList.contains("assign-class") ||
         e.target.classList.contains("preset-button") || e.target.classList.contains("delete-button")) return;
+    // If the event was just created and not yet dragged, remove the flag
+    if (eventEl.dataset.justCreated === "true") {
+      delete eventEl.dataset.justCreated;
+    }
     dragType = e.target.classList.contains("resize-handle") ? 
       (e.target.classList.contains("top") ? "resize-top" : "resize-bottom") : "move";
     currentEvent = eventEl;
@@ -329,20 +336,31 @@ document.addEventListener("mousemove", function(e) {
 
 document.addEventListener("mouseup", function(e) {
   if (!currentEvent || !dragType) return;
+  
+  // Check if no significant drag occurred (less than 5px vertical movement)
+  if (Math.abs(e.clientY - dragStartY) < 5) {
+    // If the mouse hasn't moved significantly, assume no drag occurred and keep the original placement
+    currentEvent.style.opacity = 1;
+    dragType = null;
+    currentEvent = null;
+    return;
+  }
+  
   let snappedTop = minutesToPx(snapTime(pxToMinutes(parseFloat(currentEvent.style.top))));
   if (restrictedDays.includes(currentEvent.dataset.day) && snappedTop < minutesToPx(restrictionStart)) {
     snappedTop = minutesToPx(restrictionStart);
   }
   currentEvent.style.top = snappedTop + "px";
   
+  // Only snap height if resizing (not moving)
   if (dragType !== "move") {
     let snappedHeight = minutesToPx(snapTime(pxToMinutes(parseFloat(currentEvent.style.height))));
     currentEvent.style.height = snappedHeight + "px";
   }
+  
   updateLabel(currentEvent);
   syncRepeatedEvents(currentEvent);
   
-  // Only check repeats if resizing, not moving
   if (dragType !== "move") {
     console.log("Resize detected, checking repeat pattern");
     checkAndCreateRepeats(currentEvent, true);
