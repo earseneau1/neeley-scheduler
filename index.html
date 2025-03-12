@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Day Calendar with Mirrored Repeated Events</title>
+  <!-- Link to the CSS file -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h2>Multi-Day Calendar with Full-Width Layout, Restrictions, Linked Repetition & Event Table</h2>
+  <div id="calendarHeader">
+    <div id="headerTime">Time of Day</div>
+    <div id="headerDays"></div>
+  </div>
+  <div id="calendarContainer">
+    <div id="timeGutter"></div>
+    <div id="dayColumns"></div>
+  </div>
+  <table id="eventTable">
+    <thead>
+      <tr><th>Day</th><th>Start Time</th><th>End Time</th><th>Duration (min)</th><th>Professor</th><th>Class</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="modalProfessor" class="modal">
+    <div class="modal-content">
+      <h3>Assign Professor</h3>
+      <input type="text" id="professorSearch" placeholder="Search professor...">
+      <select id="professorSelect" size="5"></select>
+      <div style="text-align: right;">
+        <button id="cancelProfessorBtn">Cancel</button>
+        <button id="confirmProfessorBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <div id="modalClass" class="modal">
+    <div class="modal-content">
+      <h3>Assign Class</h3>
+      <input type="text" id="classSearch" placeholder="Search class...">
+      <select id="classSelect" size="5"></select>
+      <div style="text-align: right;">
+        <button id="cancelClassBtn">Cancel</button>
+        <button id="confirmClassBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <!-- Link to the JavaScript file -->
+  <script src="script.js"></script>
+</body>
+</html>
